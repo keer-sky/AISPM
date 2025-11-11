@@ -25,10 +25,8 @@ class TimeSeriesPredictor:
 
     def load_and_prepare_data(self, file_path, sheet_name=0):
         self.df = pd.read_excel(file_path, sheet_name=sheet_name)
-        print(self.df.head())
         if self.df.shape[1] <= self.n_features:
-            raise ValueError(f"Data has only {self.df.shape[1]} columns, but at least {self.n_features + 1} columns are required")
-
+            raise ValueError(f"Insufficient columns: {self.df.shape[1]} found, {self.n_features + 1} required")
         return self.df
 
     def create_features_target(self):
@@ -36,7 +34,6 @@ class TimeSeriesPredictor:
         self.y = self.df.iloc[:, self.n_features].values
         self.feature_names = self.df.columns[:self.n_features].tolist()
         self.target_name = self.df.columns[self.n_features]
-
         return self.X, self.y
 
     def split_data(self):
@@ -45,13 +42,11 @@ class TimeSeriesPredictor:
             test_size=self.test_size,
             random_state=self.random_state
         )
-
         return self.X_train, self.X_test, self.y_train, self.y_test
 
     def preprocess_data(self):
         self.X_train_scaled = self.scaler.fit_transform(self.X_train)
         self.X_test_scaled = self.scaler.transform(self.X_test)
-
         return self.X_train_scaled, self.X_test_scaled
 
     def train_model(self, model=None):
@@ -65,12 +60,11 @@ class TimeSeriesPredictor:
         self.model.fit(self.X_train_scaled, self.y_train)
         self.is_fitted = True
         self.y_train_pred = self.model.predict(self.X_train_scaled)
-
         return self.model
 
     def predict(self, X=None):
         if not self.is_fitted:
-            raise ValueError("Model not trained yet. Please call train_model() first")
+            raise ValueError("Model not trained")
 
         if X is None:
             self.y_pred = self.model.predict(self.X_test_scaled)
@@ -93,7 +87,6 @@ class TimeSeriesPredictor:
             'MAE': mae,
             'R²': r2
         }
-
         return metrics
 
     def visualize_input_vs_prediction(self, num_samples=10, figsize=(15, 10)):
@@ -136,7 +129,7 @@ class TimeSeriesPredictor:
         axes[0, 1].axvline(x=self.n_features + 0.5, color='gray', linestyle='--', alpha=0.7)
         axes[0, 1].set_xlabel('Time Steps')
         axes[0, 1].set_ylabel('Values')
-        axes[0, 1].set_title(f'Sample Detailed Analysis\nActual: {detailed_actual:.2f}, Predicted: {detailed_pred:.2f}')
+        axes[0, 1].set_title(f'Sample Analysis\nActual: {detailed_actual:.2f}, Predicted: {detailed_pred:.2f}')
         axes[0, 1].legend()
         axes[0, 1].grid(True, alpha=0.3)
         time_series_length = min(100, len(self.y_test))
@@ -156,7 +149,7 @@ class TimeSeriesPredictor:
         axes[1, 1].axvline(x=0, color='r', linestyle='--', linewidth=2)
         axes[1, 1].set_xlabel('Prediction Errors')
         axes[1, 1].set_ylabel('Frequency')
-        axes[1, 1].set_title('Prediction Error Distribution')
+        axes[1, 1].set_title('Error Distribution')
         axes[1, 1].grid(True, alpha=0.3)
 
         plt.tight_layout()
@@ -172,29 +165,24 @@ class TimeSeriesPredictor:
         if num_sequences == 1:
             axes = [axes]
 
-        fig.suptitle('Continuous Input-Prediction Sequence Visualization', fontsize=16, fontweight='bold')
+        fig.suptitle('Continuous Sequence Visualization', fontsize=16, fontweight='bold')
 
         for i in range(num_sequences):
-            # Select a random sample
             idx = np.random.randint(len(self.X_test))
 
-            # Input sequence
             input_sequence = self.X_test[idx]
             actual_value = self.y_test[idx]
             predicted_value = self.y_pred[idx]
 
-            # Create complete time series (input + prediction)
             time_points = list(range(1, self.n_features + 2))
             complete_sequence = list(input_sequence) + [actual_value]
             prediction_sequence = list(input_sequence) + [predicted_value]
 
-            # Plot curves
             axes[i].plot(time_points, complete_sequence, 'go-',
-                         linewidth=2, markersize=6, label='Input Data + Actual')
+                         linewidth=2, markersize=6, label='Input + Actual')
             axes[i].plot(time_points, prediction_sequence, 'ro--',
-                         linewidth=2, markersize=6, label='Input Data + Predicted')
+                         linewidth=2, markersize=6, label='Input + Predicted')
 
-            # Mark turning point
             axes[i].axvline(x=self.n_features + 0.5, color='gray',
                             linestyle='--', alpha=0.5, label='Prediction Point')
 
