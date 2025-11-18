@@ -29,7 +29,7 @@ numpy 1.23.5
 3.Data Preparation  
 Data files should be tab-separated text files containing the following columns：  
 Frame ID (frame_id); Node ID (node_id); Node Feature (node_feature)  
-To ensure code execution, we provide a little batch dataset. dataset.py provides data processing related workflows.  
+To ensure code execution, we provide a little batch dataset https://pan.baidu.com/s/1F-X4heXb-yPcjD6Fq85dfA  code:xg6f. dataset.py provides data processing related workflows.  
 4.Quick Start  
 (1) Configure Parameters  
 Modify relevant parameters in config.py:  
