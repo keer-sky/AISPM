@@ -16,16 +16,13 @@ class GANTrainer:
         self.device = device
         self.config = config
 
-        # 创建检查点目录
         if not os.path.exists(config['checkpoint_dir']):
             os.makedirs(config['checkpoint_dir'])
 
-        # 损失函数
         self.adversarial_loss = nn.BCELoss()
         self.mse_loss = nn.MSELoss()
 
     def train_epoch(self, epoch):
-        """训练一个epoch"""
         self.generator.train()
         self.discriminator.train()
 
@@ -41,35 +38,27 @@ class GANTrainer:
             obs_traj = obs_traj.to(self.device)
             true_traj = true_traj.to(self.device)
 
-            # 准备真实数据（观察+真实未来）
             real_trajectories = torch.cat([obs_traj, true_traj], dim=1)
 
-            # 创建真实和假的标签
             real_labels = torch.full((batch_size, 1), real_label, device=self.device)
             fake_labels = torch.full((batch_size, 1), fake_label, device=self.device)
-            # 训练判别器
+
             self.d_optimizer.zero_grad()
 
-            # 真实数据的损失
             real_output = self.discriminator(real_trajectories)
             d_loss_real = self.adversarial_loss(real_output, real_labels)
 
-            # 生成假数据
             with torch.no_grad():
                 fake_future = self.generator(obs_traj)
 
             fake_trajectories = torch.cat([obs_traj, fake_future], dim=1)
 
-            # 假数据的损失
             fake_output = self.discriminator(fake_trajectories.detach())
             d_loss_fake = self.adversarial_loss(fake_output, fake_labels)
 
-            # 总判别器损失
             d_loss = (d_loss_real + d_loss_fake) / 2
             d_loss.backward()
             self.d_optimizer.step()
-
-            # 训练生成器
 
             self.g_optimizer.zero_grad()
 
@@ -84,7 +73,6 @@ class GANTrainer:
             pred_x_sum = torch.sum(fake_future[:, :, :, 0], dim=2)
             g_loss_x_sum = self.mse_loss(pred_x_sum, true_x_sum)
 
-            # 总生成器损失
             g_loss = g_loss_adv + 10 * g_loss_mse + self.config['x_sum_loss_weight'] * g_loss_x_sum
             g_loss.backward()
 

@@ -10,9 +10,9 @@ class TrajectoryDataset(Dataset):
         self.num_nodes = num_nodes
         self.seq_len = obs_len + pred_len
         self.data = []
-        self.means = []  # 保存每个序列的均值
-        self.stds = []  # 保存每个序列的标准差
-        self.original_data = []  # 保存原始数据
+        self.means = []
+        self.stds = []
+        self.original_data = []
 
         for file_path in file_paths:
             try:
@@ -38,11 +38,8 @@ class TrajectoryDataset(Dataset):
                 self.data.append(normalized_data)
                 self.means.append(mean)
                 self.stds.append(std)
-            except Exception as e:
-                print(f"Error loading file {file_path}: {e}")
+            except Exception:
                 continue
-
-        print(f"Loaded {len(self.data)} sequences")
 
     def normalize_trajectory(self, traj_data):
         normalized_data = np.zeros_like(traj_data)
@@ -54,7 +51,7 @@ class TrajectoryDataset(Dataset):
             if np.any(node_data != 0):
                 mean = node_data.mean(axis=0)
                 std = node_data.std(axis=0)
-                std = np.where(std == 0, 1, std)  # 避免除零
+                std = np.where(std == 0, 1, std)
                 normalized_data[:, node, :] = (node_data - mean) / std
                 means[node] = mean
                 stds[node] = std
