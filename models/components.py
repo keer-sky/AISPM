@@ -19,8 +19,6 @@ class GraphAttentionLayer(nn.Module):
     def forward(self, h, adj_mask=None):
         batch_size, seq_len, num_nodes, _ = h.shape
         h_flat = h.reshape(batch_size * seq_len, num_nodes, -1)
-
-        # 线性变换
         Wh = self.W(h_flat)  # [batch*seq, nodes, out_features]
 
         Wh1 = Wh.unsqueeze(2).repeat(1, 1, num_nodes, 1)
