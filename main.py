@@ -4,37 +4,52 @@ import torch
 from torch.utils.data import DataLoader
 
 from config import device, DATA_CONFIG, MODEL_CONFIG, TRAIN_CONFIG
-from data.dataset import TrajectoryDataset
+from data.dataset import TrajectoryDataset,compute_global_stats
 from models.generator import TrajectoryPredictor
 from models.discriminator import TrajectoryDiscriminator
 from training.trainer import GANTrainer
-
 
 def load_data():
     train_files = sorted(glob.glob(os.path.join(DATA_CONFIG['train_dir'], "*.txt")))
     val_files = sorted(glob.glob(os.path.join(DATA_CONFIG['val_dir'], "*.txt")))
     test_files = sorted(glob.glob(os.path.join(DATA_CONFIG['test_dir'], "*.txt")))
-
     if not train_files or not val_files:
         raise ValueError("Missing training or validation data")
-
-    train_dataset = TrajectoryDataset(train_files, DATA_CONFIG['obs_len'],
-                                      DATA_CONFIG['pred_len'], DATA_CONFIG['num_nodes'])
-    val_dataset = TrajectoryDataset(val_files, DATA_CONFIG['obs_len'],
-                                    DATA_CONFIG['pred_len'], DATA_CONFIG['num_nodes'])
-
+    global_mean, global_std = compute_global_stats(
+        train_files,
+        DATA_CONFIG['num_nodes']
+    )
+    train_dataset = TrajectoryDataset(
+        train_files,
+        global_mean,
+        global_std,
+        DATA_CONFIG['obs_len'],
+        DATA_CONFIG['pred_len'],
+        DATA_CONFIG['num_nodes']
+    )
+    val_dataset = TrajectoryDataset(
+        val_files,
+        global_mean,
+        global_std,
+        DATA_CONFIG['obs_len'],
+        DATA_CONFIG['pred_len'],
+        DATA_CONFIG['num_nodes']
+    )
     test_dataset = None
     test_loader = None
     if test_files:
-        test_dataset = TrajectoryDataset(test_files, DATA_CONFIG['obs_len'],
-                                         DATA_CONFIG['pred_len'], DATA_CONFIG['num_nodes'])
+        test_dataset = TrajectoryDataset(
+            test_files,
+            global_mean,
+            global_std,
+            DATA_CONFIG['obs_len'],
+            DATA_CONFIG['pred_len'],
+            DATA_CONFIG['num_nodes']
+        )
         test_loader = DataLoader(test_dataset, batch_size=DATA_CONFIG['batch_size'], shuffle=False)
-
     train_loader = DataLoader(train_dataset, batch_size=DATA_CONFIG['batch_size'], shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=DATA_CONFIG['batch_size'], shuffle=False)
-
     return train_loader, val_loader, test_loader, train_dataset, val_dataset, test_dataset
-
 
 def create_models():
     generator = TrajectoryPredictor(
@@ -65,7 +80,6 @@ def test_models(generator, discriminator, train_loader):
     test_real_traj = torch.cat([test_obs, test_true], dim=1)
     _ = discriminator(test_real_traj)
 
-
 def train_models(generator, discriminator, train_loader, val_loader):
     g_optimizer = torch.optim.Adam(generator.parameters(), lr=TRAIN_CONFIG['learning_rate'], weight_decay=1e-5)
     d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=TRAIN_CONFIG['learning_rate'], weight_decay=1e-5)
@@ -78,15 +92,12 @@ def train_models(generator, discriminator, train_loader, val_loader):
     val_losses = []
     best_val_loss = float('inf')
     patience_counter = 0
-
     for epoch in range(TRAIN_CONFIG['num_epochs']):
         avg_g_loss, avg_d_loss, avg_x_sum_loss, g_loss_adv, g_loss_mse, d_loss_real, d_loss_fake = trainer.train_epoch(epoch)
         avg_val_loss, avg_val_x_sum_loss = trainer.validate()
-
         train_g_losses.append(avg_g_loss)
         train_d_losses.append(avg_d_loss)
         val_losses.append(avg_val_loss)
-
         print(f'Epoch {epoch + 1}/{TRAIN_CONFIG["num_epochs"]}:')
         print(f'  G Loss: {avg_g_loss:.6f} (Adv: {g_loss_adv:.6f}, MSE: {g_loss_mse:.6f}, X_Sum: {avg_x_sum_loss:.6f})')
         print(f'  D Loss: {avg_d_loss:.6f} (Real: {d_loss_real:.6f}, Fake: {d_loss_fake:.6f})')
