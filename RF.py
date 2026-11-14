@@ -85,7 +85,7 @@ class TimeSeriesPredictor:
         }
         return metrics
 def main():
-    excel_path = 'little_03.xlsx'
+    excel_path = 'little.xlsx'
     predictor = TimeSeriesPredictor(n_features=3, test_size=0.4)
     predictor.load_and_prepare_data(excel_path)
     X, y = predictor.create_features_target()
