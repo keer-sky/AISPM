@@ -52,8 +52,8 @@ class STGATBlock(nn.Module):
         self.temporal_conv = nn.Conv2d(
             in_channels=out_features,
             out_channels=out_features,
-            kernel_size=(3, 1),
-            padding=(1, 0)
+            kernel_size=(1, 3),
+            padding=(0, 1)
         )
         self.batch_norm = nn.BatchNorm2d(out_features)
         self.dropout = nn.Dropout(dropout)
