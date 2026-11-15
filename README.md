@@ -95,13 +95,6 @@ predictor.train_model()
 y_pred = predictor.predict()  
 # Evaluate model  
 metrics = predictor.evaluate_model() 
-# Feature importance analysis  
-importance_df = predictor.feature_importance()  
-
-Parameter Description  
-n_features: Number of feature columns to use (default: 3)  
-test_size: Test set ratio  
-random_state: Random seed  
 
 Main Dependencies  
 pandas - Data processing  
