@@ -70,22 +70,8 @@ class TimeSeriesPredictor:
         else:
             X_scaled = self.scaler.transform(X)
             return self.model.predict(X_scaled)
-    def evaluate_model(self):
-        if not hasattr(self, 'y_pred'):
-            self.y_pred = self.predict()
-        mse = mean_squared_error(self.y_test, self.y_pred)
-        mae = mean_absolute_error(self.y_test, self.y_pred)
-        r2 = r2_score(self.y_test, self.y_pred)
-        rmse = np.sqrt(mse)
-        metrics = {
-            'MSE': mse,
-            'RMSE': rmse,
-            'MAE': mae,
-            'R²': r2
-        }
-        return metrics
 def main():
-    excel_path = 'little.xlsx'
+    excel_path = 'data.xlsx'
     predictor = TimeSeriesPredictor(n_features=3, test_size=0.4)
     predictor.load_and_prepare_data(excel_path)
     X, y = predictor.create_features_target()
@@ -93,7 +79,6 @@ def main():
     X_train_scaled, X_test_scaled = predictor.preprocess_data()
     predictor.train_model()
     y_pred = predictor.predict()
-    metrics = predictor.evaluate_model()
 
 if __name__ == "__main__":
     main()
