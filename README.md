@@ -47,8 +47,7 @@ MODEL_CONFIG = {
 python main.py  
 Training Features:  
 Adversarial Training + Content Loss + sum Loss  
-Early stopping mechanism and model checkpoints  
-Learning rate scheduling and gradient clippin  
+Early stopping mechanism and model checkpoints
 5.Configuration Details  
 Data Configuration (config.py)  
 DATA_CONFIG = {  
