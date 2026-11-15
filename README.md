@@ -11,8 +11,7 @@ project/
 │   ├── discriminator.py    # Discriminator model  
 │   └── components.py       # Model components  
 ├── training/  
-│   ├── trainer.py          # Training code  
-│   └── evaluator.py        # Evaluation code  
+│   └── trainer.py          # Training code  
 └── checkpoints/             # Model save location  
 1.Environment Requirements  
 （1）Reference Hardware Configuration  
