@@ -70,16 +70,6 @@ def create_models():
 
     return generator, discriminator
 
-
-def test_models(generator, discriminator, train_loader):
-    test_batch = next(iter(train_loader))
-    test_obs, test_true = test_batch
-    test_obs = test_obs.to(device)
-    test_true = test_true.to(device)
-
-    test_real_traj = torch.cat([test_obs, test_true], dim=1)
-    _ = discriminator(test_real_traj)
-
 def train_models(generator, discriminator, train_loader, val_loader):
     g_optimizer = torch.optim.Adam(generator.parameters(), lr=TRAIN_CONFIG['learning_rate'], weight_decay=1e-5)
     d_optimizer = torch.optim.Adam(discriminator.parameters(), lr=TRAIN_CONFIG['learning_rate'], weight_decay=1e-5)
@@ -124,10 +114,7 @@ def main():
 
     train_loader, val_loader = load_data()
     generator, discriminator = create_models()
-    test_models(generator, discriminator, train_loader)
-
     train_models(generator, discriminator, train_loader, val_loader)
-
     checkpoint = torch.load(TRAIN_CONFIG['best_model_path'])
     generator.load_state_dict(checkpoint['generator_state_dict'])
     discriminator.load_state_dict(checkpoint['discriminator_state_dict'])
