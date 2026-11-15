@@ -92,8 +92,7 @@ X_train_scaled, X_test_scaled = predictor.preprocess_data()
 predictor.train_model()  
 # Make predictions  
 y_pred = predictor.predict()  
-# Evaluate model  
-metrics = predictor.evaluate_model() 
+
 
 Main Dependencies  
 pandas - Data processing  
