@@ -46,8 +46,6 @@ MODEL_CONFIG = {
 }  
 (2) Train Model  
 python main.py  
-(3) Test Model  
-After training completes, automatic evaluation on test set will be performed  
 Training Features:  
 Adversarial Training + Content Loss + sum Loss  
 Early stopping mechanism and model checkpoints  
@@ -97,10 +95,7 @@ predictor.train_model()
 # Make predictions  
 y_pred = predictor.predict()  
 # Evaluate model  
-metrics = predictor.evaluate_model()  
-# Visualize results  
-predictor.visualize_input_vs_prediction()  
-predictor.visualize_continuous_prediction()  
+metrics = predictor.evaluate_model() 
 # Feature importance analysis  
 importance_df = predictor.feature_importance()  
 
