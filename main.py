@@ -12,7 +12,7 @@ from training.trainer import GANTrainer
 def load_data():
     train_files = sorted(glob.glob(os.path.join(DATA_CONFIG['train_dir'], "*.txt")))
     val_files = sorted(glob.glob(os.path.join(DATA_CONFIG['val_dir'], "*.txt")))
-    test_files = sorted(glob.glob(os.path.join(DATA_CONFIG['test_dir'], "*.txt")))
+    # test_files = sorted(glob.glob(os.path.join(DATA_CONFIG['test_dir'], "*.txt")))
     if not train_files or not val_files:
         raise ValueError("Missing training or validation data")
     global_mean, global_std = compute_global_stats(
@@ -37,19 +37,19 @@ def load_data():
     )
     test_dataset = None
     test_loader = None
-    if test_files:
-        test_dataset = TrajectoryDataset(
-            test_files,
-            global_mean,
-            global_std,
-            DATA_CONFIG['obs_len'],
-            DATA_CONFIG['pred_len'],
-            DATA_CONFIG['num_nodes']
-        )
-        test_loader = DataLoader(test_dataset, batch_size=DATA_CONFIG['batch_size'], shuffle=False)
+    # if test_files:
+    #     test_dataset = TrajectoryDataset(
+    #         test_files,
+    #         global_mean,
+    #         global_std,
+    #         DATA_CONFIG['obs_len'],
+    #         DATA_CONFIG['pred_len'],
+    #         DATA_CONFIG['num_nodes']
+    #     )
+    #     test_loader = DataLoader(test_dataset, batch_size=DATA_CONFIG['batch_size'], shuffle=False)
     train_loader = DataLoader(train_dataset, batch_size=DATA_CONFIG['batch_size'], shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=DATA_CONFIG['batch_size'], shuffle=False)
-    return train_loader, val_loader, test_loader, train_dataset, val_dataset, test_dataset
+    return train_loader, val_loader
 
 def create_models():
     generator = TrajectoryPredictor(
@@ -122,7 +122,7 @@ def train_models(generator, discriminator, train_loader, val_loader):
 def main():
     print(f'Using device: {device}')
 
-    train_loader, val_loader, _, _, _, _ = load_data()
+    train_loader, val_loader = load_data()
     generator, discriminator = create_models()
     test_models(generator, discriminator, train_loader)
 
